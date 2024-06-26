@@ -33,12 +33,15 @@ public class GuestAssistanceControllerTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         guestFeedback = new GuestFeedback();
+        guestFeedback.setDescription("Test feedback");
         guestGrievance = new GuestGrievance();
+        guestGrievance.setDescription("Test grievance");
         guestScheduleCall = new GuestScheduleCall();
+        guestScheduleCall.setDescription("Test schedule call");
     }
 
     @Test
-    void testCreateFeedback() {
+    void testCreateFeedback() throws BadRequestException {
         when(guestAssistanceService.createFeedback(any(GuestFeedback.class))).thenReturn(guestFeedback);
 
         GuestFeedback result = guestAssistanceController.createFeedback(guestFeedback);
@@ -48,7 +51,19 @@ public class GuestAssistanceControllerTest {
     }
 
     @Test
-    void testGetAllGrievances() {
+    void testCreateFeedbackThrowsBadRequestException() {
+        guestFeedback.setDescription(null); // Set invalid description to trigger exception
+
+        BadRequestException exception = assertThrows(BadRequestException.class, () -> {
+            guestAssistanceController.createFeedback(guestFeedback);
+        });
+
+        assertEquals("Feedback description cannot be null or empty", exception.getMessage());
+        verify(guestAssistanceService, times(0)).createFeedback(guestFeedback);
+    }
+
+    @Test
+    void testGetAllGrievances() throws BadRequestException {
         List<GuestGrievance> grievances = List.of(new GuestGrievance());
         when(guestAssistanceService.getAllGrievances("guest1")).thenReturn(grievances);
 
@@ -56,6 +71,16 @@ public class GuestAssistanceControllerTest {
 
         assertEquals(grievances, result);
         verify(guestAssistanceService, times(1)).getAllGrievances("guest1");
+    }
+
+    @Test
+    void testGetAllGrievancesThrowsBadRequestException() {
+        BadRequestException exception = assertThrows(BadRequestException.class, () -> {
+            guestAssistanceController.getAllGrievances("");
+        });
+
+        assertEquals("Guest ID cannot be null or empty", exception.getMessage());
+        verify(guestAssistanceService, times(0)).getAllGrievances(anyString());
     }
 
     @Test
@@ -69,6 +94,18 @@ public class GuestAssistanceControllerTest {
     }
 
     @Test
+    void testCreateGrievanceThrowsBadRequestException() throws BadRequestException {
+        guestGrievance.setDescription(null); // Set invalid description to trigger exception
+
+        BadRequestException exception = assertThrows(BadRequestException.class, () -> {
+            guestAssistanceController.createGrievance(guestGrievance);
+        });
+
+        assertEquals("Grievance description cannot be null or empty", exception.getMessage());
+        verify(guestAssistanceService, times(0)).createGrievance(guestGrievance);
+    }
+
+    @Test
     void testAddScheduleCall() throws BadRequestException {
         when(guestAssistanceService.addScheduleCall(any(GuestScheduleCall.class))).thenReturn(guestScheduleCall);
 
@@ -79,26 +116,14 @@ public class GuestAssistanceControllerTest {
     }
 
     @Test
-    void testCreateGrievanceThrowsBadRequestException() throws BadRequestException {
-        when(guestAssistanceService.createGrievance(any(GuestGrievance.class))).thenThrow(new BadRequestException("Grievance data cannot be null"));
-
-        BadRequestException exception = assertThrows(BadRequestException.class, () -> {
-            guestAssistanceController.createGrievance(guestGrievance);
-        });
-
-        assertEquals("Grievance data cannot be null", exception.getMessage());
-        verify(guestAssistanceService, times(1)).createGrievance(guestGrievance);
-    }
-
-    @Test
     void testAddScheduleCallThrowsBadRequestException() throws BadRequestException {
-        when(guestAssistanceService.addScheduleCall(any(GuestScheduleCall.class))).thenThrow(new BadRequestException("Schedule call data cannot be null"));
+        guestScheduleCall.setDescription(null); // Set invalid description to trigger exception
 
         BadRequestException exception = assertThrows(BadRequestException.class, () -> {
             guestAssistanceController.addScheduleCall(guestScheduleCall);
         });
 
-        assertEquals("Schedule call data cannot be null", exception.getMessage());
-        verify(guestAssistanceService, times(1)).addScheduleCall(guestScheduleCall);
+        assertEquals("Schedule call description cannot be null or empty", exception.getMessage());
+        verify(guestAssistanceService, times(0)).addScheduleCall(guestScheduleCall);
     }
 }

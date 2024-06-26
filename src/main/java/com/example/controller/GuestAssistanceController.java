@@ -28,25 +28,42 @@ public class GuestAssistanceController {
 		this.guestAssistanceService = guestAssistanceService;
 	}
 
-	@PostMapping("/feedback/add")
-	public GuestFeedback createFeedback(@RequestBody GuestFeedback feedback) {
-		return guestAssistanceService.createFeedback(feedback);
-	}
 
-	@GetMapping("/grievance/readall/{guestId}")
-	public List<GuestGrievance> getAllGrievances(@PathVariable("guestId") String guestId) {
-		return guestAssistanceService.getAllGrievances(guestId);
-	}
+    @PostMapping("/feedback/add")
+    public GuestFeedback createFeedback(@RequestBody GuestFeedback feedback) throws BadRequestException {
+      
+        if (feedback == null || feedback.getDescription() == null || feedback.getDescription().isEmpty()) {
+            throw new BadRequestException("Feedback description cannot be null or empty");
+        }
+        return guestAssistanceService.createFeedback(feedback);
+    }
 
-	@PostMapping("/grievance/add")
-	public GuestGrievance createGrievance( @RequestBody GuestGrievance grievance) throws BadRequestException {
-		return guestAssistanceService.createGrievance(grievance);
-	}
+    @GetMapping("/grievance/readall/{guestId}")
+    public List<GuestGrievance> getAllGrievances(@PathVariable("guestId") String guestId) throws BadRequestException {
+      
+        if (guestId == null || guestId.isEmpty()) {
+            throw new BadRequestException("Guest ID cannot be null or empty");
+        }
+        return guestAssistanceService.getAllGrievances(guestId);
+    }
 
-	@PostMapping("/schedulecall/add")
-	public GuestScheduleCall addScheduleCall( @RequestBody GuestScheduleCall scheduleCall)
-			throws BadRequestException {
-		return guestAssistanceService.addScheduleCall(scheduleCall);
-	}
+    @PostMapping("/grievance/add")
+    public GuestGrievance createGrievance(@RequestBody GuestGrievance grievance) throws BadRequestException {
+      
+        if (grievance == null || grievance.getDescription() == null || grievance.getDescription().isEmpty()) {
+            throw new BadRequestException("Grievance description cannot be null or empty");
+        }
+        return guestAssistanceService.createGrievance(grievance);
+    }
+
+    @PostMapping("/schedulecall/add")
+    public GuestScheduleCall addScheduleCall(@RequestBody GuestScheduleCall scheduleCall)
+            throws BadRequestException {
+       
+        if (scheduleCall == null || scheduleCall.getDescription() == null || scheduleCall.getDescription().isEmpty()) {
+            throw new BadRequestException("Schedule call description cannot be null or empty");
+        }
+        return guestAssistanceService.addScheduleCall(scheduleCall);
+    }
 
 }

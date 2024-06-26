@@ -37,12 +37,16 @@ public class GuestProfileController {
 		this.authService = authService;
 	}
  
+	
+	//------------------Guest Profile Information----------------//
 	@GetMapping("/readone/{guestId}")
 	public ResponseEntity<GuestProfile> getGuestById(@PathVariable("guestId") String guestId) {
 		return guestProfileService.getGuestById(guestId).map(ResponseEntity::ok)
 				.orElse(ResponseEntity.notFound().build());
 	}
  
+	
+	
 	@PutMapping("/update/{email}")
 	public ResponseEntity<GuestProfile> updateGuest(@PathVariable(EMAIL) String guestId,
 			@RequestBody GuestApplicationDTO guestDetails) throws ResourceNotFoundException {
