@@ -1,9 +1,12 @@
 package com.example.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
 
 import java.util.Map;
 import java.util.Optional;
@@ -19,10 +22,13 @@ import org.springframework.http.ResponseEntity;
 import com.example.dto.GuestApplicationDTO;
 import com.example.dto.GuestProfileTrackApplicationDTO;
 import com.example.dto.GuestSignupDTO;
+import com.example.exception.BadRequestException;
 import com.example.exception.ResourceNotFoundException;
 import com.example.model.GuestProfile;
 import com.example.service.AuthService;
 import com.example.service.GuestProfileService;
+
+
 
 public class GuestProfileControllerTest {
 
@@ -102,26 +108,25 @@ public class GuestProfileControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("OTP sent", response.getBody());
     }
-
+    
     @Test
     public void testVerifySignupOtp_Success() {
+       
         when(authService.verifySignupOtp("test@example.com", "123456")).thenReturn(true);
-
-        ResponseEntity<String> response = guestProfileController.verifySignupOtp(Map.of("email", "test@example.com", "otp", "123456"));
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Guest registered successfully!", response.getBody());
+        boolean result = guestProfileController.verifySignupOtp(Map.of("email", "test@example.com", "otp", "123456"));
+        assertTrue(result);
     }
+
 
     @Test
     public void testVerifySignupOtp_Failure() {
+
         when(authService.verifySignupOtp("test@example.com", "123456")).thenReturn(false);
+        boolean result = guestProfileController.verifySignupOtp(Map.of("email", "test@example.com", "otp", "123456"));
 
-        ResponseEntity<String> response = guestProfileController.verifySignupOtp(Map.of("email", "test@example.com", "otp", "123456"));
-
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals("Invalid or expired OTP", response.getBody());
+        assertFalse(result);
     }
+
 
     @Test
     public void testLoginGuest() {
@@ -152,13 +157,13 @@ public class GuestProfileControllerTest {
     }
 
     @Test
-    public void testVerifyPasswordResetOtp() {
+    public void testVerifyPasswordResetOtp() throws BadRequestException {
         when(authService.verifyPasswordResetOtp("test@example.com", "123456")).thenReturn(true);
-
-        ResponseEntity<Boolean> response = guestProfileController.verifyPasswordResetOtp(Map.of("email", "test@example.com", "otp", "123456"));
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(true, response.getBody());
+ 
+        boolean response = guestProfileController.verifyPasswordResetOtp(Map.of("email", "test@example.com", "otp", "123456"));
+ 
+        assertTrue(response);
+    
     }
 
     @Test

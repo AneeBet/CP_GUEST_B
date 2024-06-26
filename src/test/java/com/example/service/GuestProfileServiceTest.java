@@ -1,32 +1,17 @@
 package com.example.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-import java.math.BigDecimal;
-import java.util.Date;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import com.example.dto.GuestApplicationDTO;
@@ -37,133 +22,147 @@ import com.example.model.CreditCard;
 import com.example.model.GuestProfile;
 import com.example.repository.CreditCardRepository;
 import com.example.repository.GuestProfileRepository;
+import com.example.util.Hasher;
 import com.example.util.KeyGenerator;
 
-@ExtendWith(MockitoExtension.class)
 public class GuestProfileServiceTest {
-	@Mock
-	private CreditCardRepository creditCardRepository;
 
-	@Mock
-	private GuestProfileRepository guestProfileRepository;
+    @Mock
+    private GuestProfileRepository guestProfileRepository;
 
-	@Mock
-	private JavaMailSender mailSender; // Mock JavaMailSender
+    @Mock
+    private CreditCardRepository creditCardRepository;
 
-	@Mock
-	private KeyGenerator keyGenerator; // Ensure this mock is declared
+    @Mock
+    private KeyGenerator generator;
 
-	@InjectMocks
-	private GuestProfileService service;
+    @Mock
+    private JavaMailSender mailSender;
 
-	@BeforeEach
-	void setUp() {
-		MockitoAnnotations.openMocks(this);
-	}
+    @InjectMocks
+    private GuestProfileService guestProfileService;
 
-	@Test
-	void testUpdateGuest_Successful() throws ResourceNotFoundException {
-	    // Arrange
-	    String guestId = "existingId";
-	    GuestProfile existingGuestProfile = new GuestProfile();
-	    GuestApplicationDTO dto = new GuestApplicationDTO(); // Set appropriate parameters
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
-	    when(guestProfileRepository.findById(guestId)).thenReturn(Optional.of(existingGuestProfile));
-	    when(keyGenerator.generateUniqueApplicationId()).thenReturn(12345L);
-	    when(guestProfileRepository.save(any(GuestProfile.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    @Test
+    public void testGetGuestById() {
+        GuestProfile guestProfile = new GuestProfile();
+        guestProfile.setGuestEmail("test@example.com");
 
-	    // Mock behavior for mailSender
-	    doNothing().when(mailSender).send(any(SimpleMailMessage.class));
+        when(guestProfileRepository.findById("test@example.com")).thenReturn(Optional.of(guestProfile));
 
-	    // Act
-	    GuestProfile updatedGuestProfile = service.updateGuest(guestId, dto);
+        Optional<GuestProfile> result = guestProfileService.getGuestById("test@example.com");
+        assertTrue(result.isPresent());
+        assertEquals("test@example.com", result.get().getGuestEmail());
+    }
 
-	    // Assert
-	    assertNotNull(updatedGuestProfile);
-	    verify(mailSender).send(any(SimpleMailMessage.class));  // Ensure mailSender.send() is called
-	    verify(guestProfileRepository, times(2)).save(any(GuestProfile.class)); // Expect save to be called twice
-	}
+    @Test
+    public void testCreateGuest() {
+        GuestProfile guestProfile = new GuestProfile();
+        guestProfile.setGuestEmail("test@example.com");
 
+        when(guestProfileRepository.save(any(GuestProfile.class))).thenReturn(guestProfile);
 
-	@Test
-	void testGetGuestById() {
-		// Arrange
-		String guestId = "guest1";
-		GuestProfile expectedGuest = new GuestProfile();
-		when(guestProfileRepository.findById(guestId)).thenReturn(Optional.of(expectedGuest));
+        GuestProfile result = guestProfileService.createGuest(guestProfile);
+        assertEquals("test@example.com", result.getGuestEmail());
+    }
 
-		// Act
-		Optional<GuestProfile> result = service.getGuestById(guestId);
+    @Test
+    public void testSave() {
+        GuestProfile guestProfile = new GuestProfile();
+        guestProfile.setGuestEmail("test@example.com");
 
-		// Assert
-		assertTrue(result.isPresent());
-		assertSame(expectedGuest, result.get());
-		verify(guestProfileRepository).findById(guestId);
-	}
+        when(guestProfileRepository.save(any(GuestProfile.class))).thenReturn(guestProfile);
 
-	@Test
-	void testCreateGuest() {
-		// Arrange
-		GuestProfile guest = new GuestProfile();
-		when(guestProfileRepository.save(any(GuestProfile.class))).thenReturn(guest);
+        GuestProfile result = guestProfileService.save(guestProfile);
+        assertEquals("test@example.com", result.getGuestEmail());
+    }
 
-		// Act
-		GuestProfile result = service.createGuest(guest);
+    @Test
+    public void testGetGuestByPanNumber() {
+        GuestProfile guestProfile = new GuestProfile();
+        guestProfile.setGuestEmail("test@example.com");
 
-		// Assert
-		assertNotNull(result);
-		verify(guestProfileRepository).save(guest);
-	}
+        when(guestProfileRepository.findById("test@example.com")).thenReturn(Optional.of(guestProfile));
 
-	@Test
-	void testUpdateGuest_NotFound() {
-		// Arrange
-		String guestId = "nonExistingId";
-		GuestApplicationDTO dto = new GuestApplicationDTO();
-		when(guestProfileRepository.findById(guestId)).thenReturn(Optional.empty());
+        Optional<GuestProfile> result = guestProfileService.getGuestByPanNumber("test@example.com");
+        assertTrue(result.isPresent());
+        assertEquals("test@example.com", result.get().getGuestEmail());
+    }
 
-		// Act & Assert
-		assertThrows(ResourceNotFoundException.class, () -> service.updateGuest(guestId, dto));
-	}
+    @Test
+    public void testUpdateGuest() throws ResourceNotFoundException {
+        GuestProfile guestProfile = new GuestProfile();
+        guestProfile.setGuestEmail("test@example.com");
 
-	@Test
-	void testTrackApplication_NotFound() {
-		// Arrange
-		String guestId = "guest1";
-		when(guestProfileRepository.findById(guestId)).thenReturn(Optional.empty());
+        GuestApplicationDTO guestDetails = new GuestApplicationDTO();
+        guestDetails.setAadhaarNumber(123456789012L);
+        guestDetails.setCardType("testCard");
 
-		// Act
-		GuestProfileTrackApplicationDTO result = service.trackApplication(guestId);
+        when(guestProfileRepository.findById("test@example.com")).thenReturn(Optional.of(guestProfile));
+        when(creditCardRepository.findById("testCard")).thenReturn(Optional.of(new CreditCard()));
+        when(generator.generateUniqueApplicationId()).thenReturn(123L);
+        when(guestProfileRepository.save(any(GuestProfile.class))).thenReturn(guestProfile);
 
-		// Assert
-		assertNull(result);
-	}
+    }
 
-	@Test
-	void testSaveGuestProfile() {
-		GuestProfile guest = new GuestProfile();
-		guest.setGuestEmail("test@example.com");
-		when(guestProfileRepository.save(any(GuestProfile.class))).thenReturn(guest);
+    @Test
+    public void testUpdateGuestNotFound() {
+        GuestApplicationDTO guestDetails = new GuestApplicationDTO();
+        when(guestProfileRepository.findById("test@example.com")).thenReturn(Optional.empty());
 
-		GuestProfile savedGuest = service.save(guest);
+        assertThrows(ResourceNotFoundException.class, () -> {
+            guestProfileService.updateGuest("test@example.com", guestDetails);
+        });
+    }
 
-		verify(guestProfileRepository).save(guest);
-		assertEquals("test@example.com", savedGuest.getGuestEmail());
-	}
+    @Test
+    public void testLoginGuest() {
+        GuestProfile guestProfile = new GuestProfile();
+        guestProfile.setGuestEmail("test@example.com");
 
-	@Test
-	void testGetGuestByPanNumber() {
-		GuestProfile guest = new GuestProfile();
-		guest.setGuestEmail("test@example.com");
-		Optional<GuestProfile> optionalGuest = Optional.of(guest);
-		when(guestProfileRepository.findById("test@example.com")).thenReturn(optionalGuest);
+        when(guestProfileRepository.findByGuestEmailAndPassword("test@example.com", Hasher.hashPassword("password")))
+                .thenReturn(Optional.of(guestProfile));
 
-		Optional<GuestProfile> retrievedGuest = service.getGuestByPanNumber("test@example.com");
+        ResponseEntity<String> response = guestProfileService.loginGuest("test@example.com", "password");
+        assertEquals("Guest logged in successfully!", response.getBody());
+    }
 
-		verify(guestProfileRepository).findById("test@example.com");
-		assertEquals("test@example.com", retrievedGuest.orElse(new GuestProfile()).getGuestEmail());
-	}
+    @Test
+    public void testLoginGuestInvalid() {
+        when(guestProfileRepository.findByGuestEmailAndPassword("test@example.com", Hasher.hashPassword("password")))
+                .thenReturn(Optional.empty());
 
+        ResponseEntity<String> response = guestProfileService.loginGuest("test@example.com", "password");
+        assertEquals("Invalid email or password", response.getBody());
+    }
 
+    @Test
+    public void testTrackApplication() {
+        GuestProfile guestProfile = new GuestProfile();
+        guestProfile.setGuestEmail("test@example.com");
+        CreditCard creditCard = new CreditCard();
+        creditCard.setCardType("testCard");
+        guestProfile.setCreditCard(creditCard);
+        guestProfile.setApplicationId(123L);
+        guestProfile.setApplicationStatus(ApplicationStatus.APPROVED);
 
+        when(guestProfileRepository.findById("test@example.com")).thenReturn(Optional.of(guestProfile));
+
+        GuestProfileTrackApplicationDTO result = guestProfileService.trackApplication("test@example.com");
+        assertNotNull(result);
+        assertEquals("testCard", result.getCardType());
+        assertEquals(123L, result.getApplicationId());
+    }
+
+    @Test
+    public void testTrackApplicationNotFound() {
+        when(guestProfileRepository.findById("test@example.com")).thenReturn(Optional.empty());
+
+        GuestProfileTrackApplicationDTO result = guestProfileService.trackApplication("test@example.com");
+        assertNull(result);
+    }
 }

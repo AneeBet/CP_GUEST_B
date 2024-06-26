@@ -1,94 +1,120 @@
 package com.example.model;
 
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
-class GuestProfileTest {
-//    @Test
-//    void testGuestProfileSettersAndGetters() {
-//        // Create an instance of the model
-//    	Admin admin = new Admin("Admin","1234");
-//        GuestProfile guest = new GuestProfile();
-//        guest.setGuestEmail("test@example.com");
-//        guest.setPassword("password123");
-//        guest.setApplicationId(12345L);
-//        guest.setMobileNumber("1234567890");
-//        guest.setName("John Doe");
-//        guest.setPanId("ABCDE1234F");
-//        guest.setAadhaarNumber(123456789012L);
-//        guest.setAddress("1234 Main St");
-//        guest.setDob(new Date());
-//        guest.setEmploymentYears(5);
-//        guest.setCompanyName("Example Corp");
-//        guest.setAnnualIncome(new BigDecimal("50000"));
-//        guest.setIncomeProofFilePath("/path/to/doc.pdf");
-//        guest.setAadhaarFilePath("/path/to/aadhaar.pdf");
-//        guest.setPanFilePath("/path/to/pan.pdf");
-//        guest.setSignatureFilePath("/path/to/signature.pdf");
-//        guest.setPhotoFilePath("/path/to/photo.jpg");
-//        guest.setAdmin(admin);
-//        guest.setApplicationId(1L);
-//
-//        // Assertions to check if the data is set correctly
-//        assertEquals("test@example.com", guest.getGuestEmail());
-//        assertEquals("password123", guest.getPassword());
-//        assertEquals(12345L, guest.getApplicationId());
-//        assertEquals("1234567890", guest.getMobileNumber());
-//        assertEquals("John Doe", guest.getName());
-//        assertEquals("ABCDE1234F", guest.getPanId());
-//        assertEquals(Long.valueOf(123456789012L), guest.getAadhaarNumber());
-//        assertEquals("1234 Main St", guest.getAddress());
-//        assertNotNull(guest.getDob());
-//        assertEquals(5, guest.getEmploymentYears());
-//        assertEquals("Example Corp", guest.getCompanyName());
-//        assertEquals(0, new BigDecimal("50000").compareTo(guest.getAnnualIncome()));
-//        assertEquals("/path/to/doc.pdf", guest.getIncomeProofFilePath());
-//        assertEquals("/path/to/aadhaar.pdf", guest.getAadhaarFilePath());
-//        assertEquals("/path/to/pan.pdf", guest.getPanFilePath());
-//        assertEquals("/path/to/signature.pdf", guest.getSignatureFilePath());
-//        assertEquals("/path/to/photo.jpg", guest.getPhotoFilePath());
-//        assertEquals("Admin",admin.getUsername());
-//        assertEquals("1234",admin.getPassword());
-//        assertEquals(1L,guest.getApplicationId());
-//        
-//    }
-    
-    @Test
-    public void testGuestProfileConstructor() {
-        // Setup
-        Admin admin = new Admin("Admin", "1234");
-        Date now = new Date();
-        GuestProfile guest = new GuestProfile(
-            "test@example.com", "password123", 12345L, "1234567890", "John Doe",
-            "ABCDE1234F", 123456789012L, "1234 Main St", now, 5, "Example Corp",
-            new BigDecimal("50000"), "/path/to/doc.pdf", new CreditCard(), 
-            ApplicationStatus.APPROVED, "/path/to/aadhaar.pdf", "/path/to/pan.pdf",
-            "/path/to/signature.pdf", "/path/to/photo.jpg", admin
-        );
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-        // Assertions
-        assertEquals("test@example.com", guest.getGuestEmail());
-        assertEquals("password123", guest.getPassword());
-        assertEquals(12345L, guest.getApplicationId());
-        assertEquals("1234567890", guest.getMobileNumber());
-        assertEquals("John Doe", guest.getName());
-        assertEquals("ABCDE1234F", guest.getPanId());
-        assertEquals(Long.valueOf(123456789012L), guest.getAadhaarNumber());
-        assertEquals("1234 Main St", guest.getAddress());
-        assertEquals(now, guest.getDob());
-        assertEquals(5, guest.getEmploymentYears());
-        assertEquals("Example Corp", guest.getCompanyName());
-        assertEquals(0, new BigDecimal("50000").compareTo(guest.getAnnualIncome()));
-        assertEquals("/path/to/doc.pdf", guest.getIncomeProofFilePath());
-        assertEquals("/path/to/aadhaar.pdf", guest.getAadhaarFilePath());
-        assertEquals("/path/to/pan.pdf", guest.getPanFilePath());
-        assertEquals("/path/to/signature.pdf", guest.getSignatureFilePath());
-        assertEquals("/path/to/photo.jpg", guest.getPhotoFilePath());
-        assertEquals(admin, guest.getAdmin());
-        assertEquals("Admin", admin.getUsername());
-        assertEquals("1234", admin.getPassword());
+public class GuestProfileTest {
+
+    private GuestProfile guestProfile;
+    private Admin admin;
+    private CreditCard creditCard;
+
+    @BeforeEach
+    public void setUp() {
+        admin = new Admin();
+        admin.setUsername("adminUser");
+
+        creditCard = new CreditCard();
+        creditCard.setCardType("Visa");
+
+        guestProfile = new GuestProfile(
+                "test@example.com",
+                "password123",
+                123L,
+                "1234567890",
+                "John Doe",
+                "ABCDE1234F",
+                123456789012L,
+                "123 Test St",
+                new Date(1000000000L),
+                5,
+                "Test Company",
+                new BigDecimal("50000"),
+                "incomeProofPath",
+                creditCard,
+                ApplicationStatus.PENDING,
+                "aadhaarFilePath",
+                "panFilePath",
+                "signatureFilePath",
+                "photoFilePath",
+                admin
+        );
+    }
+
+    @Test
+    public void testGettersAndSetters() {
+        assertEquals("test@example.com", guestProfile.getGuestEmail());
+        assertEquals("password123", guestProfile.getPassword());
+        assertEquals(123L, guestProfile.getApplicationId());
+        assertEquals("1234567890", guestProfile.getMobileNumber());
+        assertEquals("John Doe", guestProfile.getName());
+        assertEquals("ABCDE1234F", guestProfile.getPanId());
+        assertEquals(123456789012L, guestProfile.getAadhaarNumber());
+        assertEquals("123 Test St", guestProfile.getAddress());
+        assertEquals(new Date(1000000000L), guestProfile.getDob());
+        assertEquals(5, guestProfile.getEmploymentYears());
+        assertEquals("Test Company", guestProfile.getCompanyName());
+        assertEquals(new BigDecimal("50000"), guestProfile.getAnnualIncome());
+        assertEquals("incomeProofPath", guestProfile.getIncomeProofFilePath());
+        assertEquals(creditCard, guestProfile.getCreditCard());
+        assertEquals(ApplicationStatus.PENDING, guestProfile.getApplicationStatus());
+        assertEquals("aadhaarFilePath", guestProfile.getAadhaarFilePath());
+        assertEquals("panFilePath", guestProfile.getPanFilePath());
+        assertEquals("signatureFilePath", guestProfile.getSignatureFilePath());
+        assertEquals("photoFilePath", guestProfile.getPhotoFilePath());
+        assertEquals(admin, guestProfile.getAdmin());
+
+        guestProfile.setGuestEmail("newemail@example.com");
+        guestProfile.setPassword("newpassword");
+        guestProfile.setApplicationId(456L);
+        guestProfile.setMobileNumber("0987654321");
+        guestProfile.setName("Jane Doe");
+        guestProfile.setPanId("XYZAB1234C");
+        guestProfile.setAadhaarNumber(987654321012L);
+        guestProfile.setAddress("456 New St");
+        guestProfile.setDob(new Date(2000000000L));
+        guestProfile.setEmploymentYears(10);
+        guestProfile.setCompanyName("New Company");
+        guestProfile.setAnnualIncome(new BigDecimal("100000"));
+        guestProfile.setIncomeProofFilePath("newIncomeProofPath");
+        guestProfile.setCreditCard(null);
+        guestProfile.setApplicationStatus(ApplicationStatus.APPROVED);
+        guestProfile.setAadhaarFilePath("newAadhaarFilePath");
+        guestProfile.setPanFilePath("newPanFilePath");
+        guestProfile.setSignatureFilePath("newSignatureFilePath");
+        guestProfile.setPhotoFilePath("newPhotoFilePath");
+        guestProfile.setAdmin(null);
+
+        assertEquals("newemail@example.com", guestProfile.getGuestEmail());
+        assertEquals("newpassword", guestProfile.getPassword());
+        assertEquals(456L, guestProfile.getApplicationId());
+        assertEquals("0987654321", guestProfile.getMobileNumber());
+        assertEquals("Jane Doe", guestProfile.getName());
+        assertEquals("XYZAB1234C", guestProfile.getPanId());
+        assertEquals(987654321012L, guestProfile.getAadhaarNumber());
+        assertEquals("456 New St", guestProfile.getAddress());
+        assertEquals(new Date(2000000000L), guestProfile.getDob());
+        assertEquals(10, guestProfile.getEmploymentYears());
+        assertEquals("New Company", guestProfile.getCompanyName());
+        assertEquals(new BigDecimal("100000"), guestProfile.getAnnualIncome());
+        assertEquals("newIncomeProofPath", guestProfile.getIncomeProofFilePath());
+        assertNull(guestProfile.getCreditCard());
+        assertEquals(ApplicationStatus.APPROVED, guestProfile.getApplicationStatus());
+        assertEquals("newAadhaarFilePath", guestProfile.getAadhaarFilePath());
+        assertEquals("newPanFilePath", guestProfile.getPanFilePath());
+        assertEquals("newSignatureFilePath", guestProfile.getSignatureFilePath());
+        assertEquals("newPhotoFilePath", guestProfile.getPhotoFilePath());
+        assertNull(guestProfile.getAdmin());
+    }
+
+    @Test
+    public void testNoArgsConstructor() {
+        GuestProfile emptyGuestProfile = new GuestProfile();
+        assertNotNull(emptyGuestProfile);
     }
 }

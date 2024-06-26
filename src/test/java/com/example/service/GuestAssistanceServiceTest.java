@@ -1,27 +1,31 @@
 package com.example.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.mail.javamail.JavaMailSender;
-
 import com.example.exception.BadRequestException;
 import com.example.model.GuestFeedback;
 import com.example.model.GuestGrievance;
+import com.example.model.GuestProfile;
 import com.example.model.GuestScheduleCall;
 import com.example.repository.FeedbackRepository;
 import com.example.repository.GrievanceRepository;
 import com.example.repository.ScheduleCallRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
 public class GuestAssistanceServiceTest {
 
     @Mock
@@ -39,62 +43,72 @@ public class GuestAssistanceServiceTest {
     @InjectMocks
     private GuestAssistanceService guestAssistanceService;
 
+    private GuestProfile guestProfile;
+
     @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
+    void setUp() {
+        guestProfile = new GuestProfile();
+        guestProfile.setGuestEmail("test@example.com");
     }
 
     @Test
-    public void testCreateFeedback_Success() {
+    void testCreateFeedback() {
         GuestFeedback feedback = new GuestFeedback();
-        when(feedbackRepository.save(feedback)).thenReturn(feedback);
+        feedback.setGuestProfile(guestProfile);
+
+        when(feedbackRepository.save(any(GuestFeedback.class))).thenReturn(feedback);
 
         GuestFeedback result = guestAssistanceService.createFeedback(feedback);
 
-        assertEquals(feedback, result);
+        assertNotNull(result);
+        assertEquals("test@example.com", result.getGuestProfile().getGuestEmail());
+        verify(feedbackRepository, times(1)).save(feedback);
     }
 
     @Test
-    public void testCreateGrievance_Success() throws BadRequestException {
+    void testCreateGrievance() throws BadRequestException {
         GuestGrievance grievance = new GuestGrievance();
-        GuestGrievance savedGrievance = new GuestGrievance();
-        savedGrievance.setGrievanceId(1L);
-        when(grievanceRepository.save(grievance)).thenReturn(savedGrievance);
+        grievance.setGuestProfile(guestProfile);
+
+
+
 
     }
 
     @Test
-    public void testCreateGrievance_NullGrievance() {
-        assertThrows(BadRequestException.class, () -> {
-            guestAssistanceService.createGrievance(null);
-        });
+    void testCreateGrievanceWithNull() {
+        BadRequestException exception = assertThrows(BadRequestException.class, () -> guestAssistanceService.createGrievance(null));
+        assertEquals("Grievance data cannot be null", exception.getMessage());
     }
 
     @Test
-    public void testAddScheduleCall_Success() throws BadRequestException {
+    void testAddScheduleCall() throws BadRequestException {
         GuestScheduleCall scheduleCall = new GuestScheduleCall();
-        GuestScheduleCall savedScheduleCall = new GuestScheduleCall();
-        savedScheduleCall.setScheduleCallId(1L);
-        when(scheduleCallRepository.save(scheduleCall)).thenReturn(savedScheduleCall);
+        scheduleCall.setGuestProfile(guestProfile);
 
-  
+
+
+       
     }
 
     @Test
-    public void testAddScheduleCall_NullScheduleCall() {
-        assertThrows(BadRequestException.class, () -> {
-            guestAssistanceService.addScheduleCall(null);
-        });
+    void testAddScheduleCallWithNull() {
+        BadRequestException exception = assertThrows(BadRequestException.class, () -> guestAssistanceService.addScheduleCall(null));
+        assertEquals("Schedule call data cannot be null", exception.getMessage());
     }
 
     @Test
-    public void testGetAllGrievances() {
-        String guestId = "guest123";
-        List<GuestGrievance> grievances = new ArrayList<>();
-        when(grievanceRepository.findAllByGuestId(guestId)).thenReturn(grievances);
+    void testGetAllGrievances() {
+        List<GuestGrievance> grievances = Collections.singletonList(new GuestGrievance());
 
-        List<GuestGrievance> result = guestAssistanceService.getAllGrievances(guestId);
+        when(grievanceRepository.findAllByGuestId(anyString())).thenReturn(grievances);
 
-        assertEquals(grievances, result);
+        List<GuestGrievance> result = guestAssistanceService.getAllGrievances("guestId");
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(grievanceRepository, times(1)).findAllByGuestId("guestId");
     }
+
+   
 }
