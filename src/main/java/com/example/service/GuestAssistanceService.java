@@ -41,7 +41,7 @@ public class GuestAssistanceService {
 		}
 
 		sendEmail(grievance.getGuestProfile().getGuestEmail(), "Grievance Submitted Successfully",
-				"Hi, your grievance is Submitted with Id: " + grievance.getGrievanceId());
+				"Hi, your grievance is Submitted. Our Customer Support will try to resolve it as soon as possible");
 		return grievanceRepository.save(grievance);
 	}
 
@@ -51,7 +51,7 @@ public class GuestAssistanceService {
 		}
 
 		sendEmail(scheduleCall.getGuestProfile().getGuestEmail(), "ScheduleCall Submitted Successfully",
-				"Hi, your ScheduleCall is Submitted with Id: " + scheduleCall.getScheduleCallId());
+				"Hi, your ScheduleCall is Submitted . Our Customer Support will try to resolve it as soon as possible");
 		return scheduleCallRepository.save(scheduleCall);
 	}
 
